@@ -1,0 +1,32 @@
+{
+  "name": "ob-wi-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for git-native work item tracker (Open Brain)",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "ob-wi-mcp": "dist/index.js",
+    "ob-wi-mcp-init": "dist/init.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "inspector": "npx @modelcontextprotocol/inspector dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.1",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0",
+    "simple-git": "^3.27.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.13.14",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}
