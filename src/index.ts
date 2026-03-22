@@ -4,6 +4,15 @@ import { loadConfig } from './config.js';
 import { createServer } from './server.js';
 import { createGit } from './git/git.js';
 import { onStartup, startPeriodicSync } from './git/sync.js';
+import { createRequire } from 'module';
+
+// Handle --version flag before anything else
+if (process.argv.includes('--version') || process.argv.includes('-v')) {
+  const require = createRequire(import.meta.url);
+  const pkg = require('../package.json') as { version: string };
+  console.log(pkg.version);
+  process.exit(0);
+}
 
 async function main() {
   const config = loadConfig();
