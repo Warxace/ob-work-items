@@ -1,5 +1,7 @@
 import { simpleGit, SimpleGit } from 'simple-git';
 
+const warnedMissingRemote = new WeakSet<SimpleGit>();
+
 export function createGit(repoPath: string): SimpleGit {
   return simpleGit(repoPath);
 }
@@ -24,10 +26,13 @@ export async function commitAll(git: SimpleGit, message: string): Promise<boolea
 export async function pullRemote(git: SimpleGit): Promise<void> {
   try {
     const remotes = await git.getRemotes();
-    if (remotes.length === 0) return;
+    if (remotes.length === 0) {
+      warnMissingRemote(git);
+      return;
+    }
     await git.pull(['--rebase']);
-  } catch (err) {
-    console.error('[git] pull failed (non-fatal):', (err as Error).message);
+  } catch (err: unknown) {
+    console.error('[git] pull failed (non-fatal):', err instanceof Error ? err.message : String(err));
   }
 }
 
@@ -37,9 +42,21 @@ export async function pullRemote(git: SimpleGit): Promise<void> {
 export async function pushRemote(git: SimpleGit): Promise<void> {
   try {
     const remotes = await git.getRemotes();
-    if (remotes.length === 0) return;
+    if (remotes.length === 0) {
+      warnMissingRemote(git);
+      return;
+    }
     await git.push();
-  } catch (err) {
-    console.error('[git] push failed (non-fatal):', (err as Error).message);
+  } catch (err: unknown) {
+    console.error('[git] push failed (non-fatal):', err instanceof Error ? err.message : String(err));
   }
+}
+
+function warnMissingRemote(git: SimpleGit): void {
+  if (warnedMissingRemote.has(git)) {
+    return;
+  }
+
+  warnedMissingRemote.add(git);
+  console.error('[git] no remote configured; continuing with local-only work-items repository');
 }
