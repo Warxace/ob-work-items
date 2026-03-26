@@ -27,6 +27,7 @@ export default defineConfig([
     rules: {
       '@typescript-eslint/no-deprecated': 'error',
       '@typescript-eslint/no-base-to-string': 'error',
+      '@typescript-eslint/no-redundant-type-constituents': 'error',
       '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/only-throw-error': 'error',
