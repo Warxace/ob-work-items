@@ -94,42 +94,7 @@ ob-wi-mcp/
 
 1. `npx ob-wi-mcp init <path>` — создаёт папку, `git init`, `.schema/types.yaml` с дефолтными типами, начальный коммит.
 
-## Конфигурация сервера
+## Примечание по документации
 
-```jsonc
-// передаётся через CLI-аргументы или env
-{
-  "workItemsPath": "/path/to/work-items",  // обязательный
-  "push": {
-    "strategy": "periodic",                 // "periodic" | "on-commit" | "manual"
-    "intervalSeconds": 30                   // для periodic
-  }
-}
-```
-
-## Подключение к opencode
-
-Сервер исполняется из WSL, поэтому все пути — в формате `/mnt/c/...`.
-
-```jsonc
-// .opencode/config.jsonc (в проекте или глобально)
-{
-  "mcp": {
-    "work-items": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/mnt/c/Users/Mi/source/Kashtan/ob-wi-mcp/dist/index.js"],
-      "env": {
-        "WI_PATH": "/mnt/c/Users/Mi/source/Kashtan/work-items"
-      }
-    }
-  }
-}
-```
-
-## Инициализация репозитория work-items
-
-```bash
-node /mnt/c/Users/Mi/source/Kashtan/ob-wi-mcp/dist/init.js \
-  /mnt/c/Users/Mi/source/Kashtan/work-items
-```
+Пользовательская документация, установка и примеры подключения вынесены в `README.md`.
+`PLAN.md` оставляем только для внутренних заметок по реализации.

@@ -25,10 +25,12 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "inspector": "npx @modelcontextprotocol/inspector dist/index.js",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "npm run lint && npm run build && npm test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.1",
@@ -38,10 +40,14 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.13.14",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
+    "typescript-eslint": "^8.57.2",
     "vitest": "^3.0.9"
   }
 }

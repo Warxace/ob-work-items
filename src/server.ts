@@ -17,10 +17,12 @@ export function createServer(config: Config, git: SimpleGit): McpServer {
 
   const repo = config.workItemsPath;
 
-  server.tool(
+  server.registerTool(
     'create_work_item',
-    'Create a new work item (task, issue, idea, decision, or question)',
-    CreateWorkItemSchema.shape,
+    {
+      description: 'Create a new work item (task, issue, idea, decision, or question)',
+      inputSchema: CreateWorkItemSchema.shape,
+    },
     async (input) => {
       const result = await handleCreateWorkItem(input as never, repo, git, config);
       return {
@@ -29,10 +31,12 @@ export function createServer(config: Config, git: SimpleGit): McpServer {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'get_work_item',
-    'Get a work item by ID',
-    GetWorkItemSchema.shape,
+    {
+      description: 'Get a work item by ID',
+      inputSchema: GetWorkItemSchema.shape,
+    },
     async (input) => {
       const result = await handleGetWorkItem(input as never, repo);
       return {
@@ -41,10 +45,12 @@ export function createServer(config: Config, git: SimpleGit): McpServer {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'list_work_items',
-    'List work items with optional filters (type, status, priority, tags, agent, machine)',
-    ListWorkItemsSchema.shape,
+    {
+      description: 'List work items with optional filters (type, status, priority, tags, agent, machine)',
+      inputSchema: ListWorkItemsSchema.shape,
+    },
     async (input) => {
       const result = await handleListWorkItems(input as never, repo);
       return {
@@ -53,10 +59,12 @@ export function createServer(config: Config, git: SimpleGit): McpServer {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'update_work_item',
-    'Update fields and/or body of an existing work item',
-    UpdateWorkItemSchema.shape,
+    {
+      description: 'Update fields and/or body of an existing work item',
+      inputSchema: UpdateWorkItemSchema.shape,
+    },
     async (input) => {
       const result = await handleUpdateWorkItem(input as never, repo, git, config);
       return {
@@ -65,10 +73,12 @@ export function createServer(config: Config, git: SimpleGit): McpServer {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'search_work_items',
-    'Full-text search across work item titles and bodies',
-    SearchWorkItemsSchema.shape,
+    {
+      description: 'Full-text search across work item titles and bodies',
+      inputSchema: SearchWorkItemsSchema.shape,
+    },
     async (input) => {
       const result = await handleSearchWorkItems(input as never, repo);
       return {
@@ -77,10 +87,12 @@ export function createServer(config: Config, git: SimpleGit): McpServer {
     },
   );
 
-  server.tool(
+  server.registerTool(
     'validate_work_item',
-    'Validate a work item against the schema, returns advisory warnings',
-    ValidateWorkItemSchema.shape,
+    {
+      description: 'Validate a work item against the schema, returns advisory warnings',
+      inputSchema: ValidateWorkItemSchema.shape,
+    },
     async (input) => {
       const result = await handleValidateWorkItem(input as never, repo);
       return {
