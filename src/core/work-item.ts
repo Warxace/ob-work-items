@@ -2,25 +2,27 @@ import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
 import { generateId, idToFilename, filenameToId } from './id.js';
-import type { WorkItem, WorkItemFilter } from './types.js';
+import type { WorkItem, WorkItemFilter, WorkItemPriority, WorkItemSource, WorkItemStatus, WorkItemType } from './types.js';
 
 /**
  * Parses a work item markdown file into a WorkItem object.
  */
 export function parseWorkItem(id: string, content: string): WorkItem {
   const { data, content: body } = matter(content);
+  const frontmatter = data as Record<string, unknown>;
+
   return {
     id,
-    type: data.type,
-    status: data.status,
-    priority: data.priority,
-    title: data.title ?? '',
+    type: readString(frontmatter.type) as WorkItemType,
+    status: readString(frontmatter.status) as WorkItemStatus,
+    priority: readString(frontmatter.priority) as WorkItemPriority,
+    title: readString(frontmatter.title, ''),
     body: body.trim(),
-    created: data.created,
-    updated: data.updated,
-    source: data.source,
-    tags: data.tags ?? [],
-    links: data.links ?? [],
+    created: readString(frontmatter.created),
+    updated: readString(frontmatter.updated),
+    source: readSource(frontmatter.source),
+    tags: readStringArray(frontmatter.tags),
+    links: readStringArray(frontmatter.links),
   };
 }
 
@@ -151,4 +153,33 @@ function matchesFilter(item: WorkItem, filter?: WorkItemFilter): boolean {
     if (!filter.tags.every((t) => itemTags.includes(t))) return false;
   }
   return true;
+}
+
+function readString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function readStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+function readSource(value: unknown): WorkItemSource | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const source = value as Record<string, unknown>;
+  const result: WorkItemSource = {};
+
+  if (typeof source.agent === 'string') {
+    result.agent = source.agent;
+  }
+  if (typeof source.context === 'string') {
+    result.context = source.context;
+  }
+  if (typeof source.machine === 'string') {
+    result.machine = source.machine;
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
 }
