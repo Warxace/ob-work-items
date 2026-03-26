@@ -5,9 +5,11 @@
 # Что делает:
 #   1. Проверяет наличие node и git
 #   2. Настраивает ~/.npmrc для GitHub Packages (auth + registry scope)
-#   3. Клонирует work-items репо
-#   4. Создаёт/обновляет ~/.config/opencode/opencode.json
-#   5. Smoke test: npx @warxace/ob-wi-mcp --version
+#   3. Устанавливает MCP пакет глобально
+#   4. Устанавливает launcher-скрипт для MCP сервера
+#   5. Клонирует work-items репо
+#   6. Создаёт/обновляет ~/.config/opencode/opencode.json
+#   7. Smoke test: launcher --version
 #
 # Использование:
 #   bash setup-machine.sh
@@ -20,6 +22,15 @@ PACKAGE_NAME="@warxace/ob-wi-mcp"
 WORKITEMS_REPO="git@github.com:Warxace/openbrain-workitem-store.git"
 REGISTRY="https://npm.pkg.github.com"
 OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
+LAUNCHER_TARGET="$HOME/.local/bin/ob-work-items-mcp-server"
+SOURCE_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE_PATH" ]]; do
+  SOURCE_DIR="$(cd "$(dirname "$SOURCE_PATH")" && pwd)"
+  SOURCE_PATH="$(readlink "$SOURCE_PATH")"
+  [[ "$SOURCE_PATH" != /* ]] && SOURCE_PATH="$SOURCE_DIR/$SOURCE_PATH"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SOURCE_PATH")" && pwd)"
+LAUNCHER_SOURCE="$SCRIPT_DIR/run-mcp-server.sh"
 
 # ─── Цвета ───────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -114,7 +125,21 @@ EOF
 ok "~/.npmrc configured for GitHub Packages."
 echo ""
 
-# ─── 3. Клонирование work-items ───────────────────────────────────────────────
+# ─── 3. Установка MCP пакета и launcher ───────────────────────────────────────
+info "Installing MCP server package..."
+
+npm install -g "$PACKAGE_NAME"
+ok "$PACKAGE_NAME installed globally."
+
+[[ -f "$LAUNCHER_SOURCE" ]] || die "Launcher template not found: $LAUNCHER_SOURCE"
+
+mkdir -p "$(dirname "$LAUNCHER_TARGET")"
+install -m 755 "$LAUNCHER_SOURCE" "$LAUNCHER_TARGET"
+ok "Launcher installed to $LAUNCHER_TARGET"
+
+echo ""
+
+# ─── 4. Клонирование work-items ───────────────────────────────────────────────
 info "work-items repository setup"
 echo ""
 
@@ -146,7 +171,7 @@ fi
 
 echo ""
 
-# ─── 4. Opencode config ───────────────────────────────────────────────────────
+# ─── 5. Opencode config ───────────────────────────────────────────────────────
 info "Configuring opencode..."
 
 mkdir -p "$(dirname "$OPENCODE_CONFIG")"
@@ -161,15 +186,17 @@ if [[ -f "$OPENCODE_CONFIG" ]]; then
   info "Backup saved to ${OPENCODE_CONFIG}.bak"
 
   # Используем node для мержа (он уже есть)
-  node - <<JSEOF
+  OPENCODE_CONFIG_PATH="$OPENCODE_CONFIG" LAUNCHER_PATH="$LAUNCHER_TARGET" WORK_ITEMS_PATH="$WI_PATH" node - <<'JSEOF'
 const fs = require('fs');
-const path = '${OPENCODE_CONFIG}';
+const path = process.env.OPENCODE_CONFIG_PATH;
+const launcherPath = process.env.LAUNCHER_PATH;
+const workItemsPath = process.env.WORK_ITEMS_PATH;
 let config = {};
 try { config = JSON.parse(fs.readFileSync(path, 'utf8')); } catch(e) {}
 config.mcp = config.mcp || {};
 config.mcp['work-items'] = {
   type: 'local',
-  command: ['npx', '-y', '${PACKAGE_NAME}', '--path', '${WI_PATH}'],
+  command: [launcherPath, '--path', workItemsPath],
   enabled: true
 };
 fs.writeFileSync(path, JSON.stringify(config, null, 2) + '\n');
@@ -179,13 +206,13 @@ else
   cat > "$OPENCODE_CONFIG" << JSONEOF
 {
   "\$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "work-items": {
-      "type": "local",
-      "command": ["npx", "-y", "${PACKAGE_NAME}", "--path", "${WI_PATH}"],
-      "enabled": true
+    "mcp": {
+      "work-items": {
+        "type": "local",
+        "command": ["${LAUNCHER_TARGET}", "--path", "${WI_PATH}"],
+        "enabled": true
+      }
     }
-  }
 }
 JSONEOF
 fi
@@ -193,18 +220,17 @@ fi
 ok "opencode config written to $OPENCODE_CONFIG"
 echo ""
 
-# ─── 5. Smoke test ────────────────────────────────────────────────────────────
+# ─── 6. Smoke test ────────────────────────────────────────────────────────────
 info "Running smoke test..."
 
-# Очищаем npx кэш для пакета чтобы убедиться что скачиваем свежий
-NPX_OUTPUT=$(npx -y "$PACKAGE_NAME" --version 2>&1) || true
+LAUNCHER_OUTPUT=$("$LAUNCHER_TARGET" --version 2>&1) || true
 
-if echo "$NPX_OUTPUT" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+$"; then
-  VERSION=$(echo "$NPX_OUTPUT" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$")
-  ok "Smoke test passed! ${PACKAGE_NAME}@${VERSION} works."
+if echo "$LAUNCHER_OUTPUT" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+$"; then
+  VERSION=$(echo "$LAUNCHER_OUTPUT" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$")
+  ok "Smoke test passed! launcher resolves ob-wi-mcp ${VERSION}."
 else
-  warn "Smoke test output: $NPX_OUTPUT"
-  warn "Could not confirm version. Check that the package is published and the PAT has read:packages scope."
+  warn "Smoke test output: $LAUNCHER_OUTPUT"
+  warn "Could not confirm version. Check global install, launcher path, and PAT read:packages scope."
 fi
 
 echo ""
@@ -213,6 +239,7 @@ echo "  Setup complete!"
 echo ""
 echo "  work-items path : $WI_PATH"
 echo "  opencode config : $OPENCODE_CONFIG"
+echo "  launcher        : $LAUNCHER_TARGET"
 echo ""
 echo "  Restart opencode to pick up the new MCP server."
 echo "  ─────────────────────────────────────────"
