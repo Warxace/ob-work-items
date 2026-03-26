@@ -10,7 +10,7 @@ interface TypeDefinition {
   transitions?: string[]; // allowed next statuses (advisory)
 }
 
-type SchemaDefinition = Record<string, TypeDefinition>;
+type SchemaDefinition = Partial<Record<string, TypeDefinition>>;
 
 const SCHEMA_PATH = '.schema/types.yaml';
 
@@ -42,7 +42,7 @@ export async function validateWorkItem(
   if (!schema) return warnings;
 
   const typeDef = schema[item.type];
-  if (!typeDef) {
+  if (typeDef === undefined) {
     warnings.push({ field: 'type', message: `Unknown type "${item.type}", not defined in schema` });
     return warnings;
   }
@@ -80,7 +80,7 @@ export function checkTransition(
 ): ValidationWarning[] {
   if (!schema) return [];
   const typeDef = schema[type];
-  if (!typeDef?.transitions) return [];
+  if (typeDef === undefined || typeDef.transitions === undefined) return [];
 
   // transitions is a list of "from->to" pairs
   const allowed = typeDef.transitions.map((t) => t.split('->').map((s) => s.trim()));

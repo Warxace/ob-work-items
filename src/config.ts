@@ -22,10 +22,9 @@ export interface Config {
 export function loadConfig(): Config {
   const args = parseArgs(process.argv.slice(2));
 
-  const workItemsPath =
-    args['path'] ??
-    process.env['WI_PATH'] ??
-    null;
+  const cliPath = args['path'];
+  const envPath = process.env['WI_PATH'];
+  const workItemsPath = cliPath || envPath;
 
   if (!workItemsPath) {
     throw new Error(
@@ -34,17 +33,13 @@ export function loadConfig(): Config {
     );
   }
 
-  const strategy = (
-    args['push-strategy'] ??
-    process.env['WI_PUSH_STRATEGY'] ??
-    'periodic'
-  ) as PushStrategy;
+  const cliStrategy = args['push-strategy'];
+  const envStrategy = process.env['WI_PUSH_STRATEGY'];
+  const strategy = (cliStrategy || envStrategy || 'periodic') as PushStrategy;
 
-  const intervalSeconds = Number(
-    args['push-interval'] ??
-    process.env['WI_PUSH_INTERVAL'] ??
-    30,
-  );
+  const cliInterval = args['push-interval'];
+  const envInterval = process.env['WI_PUSH_INTERVAL'];
+  const intervalSeconds = Number(cliInterval || envInterval || 30);
 
   return {
     workItemsPath,
