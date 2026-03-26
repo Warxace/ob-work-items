@@ -4,6 +4,7 @@ import { loadConfig } from './config.js';
 import { createServer } from './server.js';
 import { createGit } from './git/git.js';
 import { onStartup, startPeriodicSync } from './git/sync.js';
+import { initWorkItemsRepo } from './init-repo.js';
 import { createRequire } from 'module';
 
 // Handle --version flag before anything else
@@ -15,6 +16,19 @@ if (process.argv.includes('--version') || process.argv.includes('-v')) {
 }
 
 async function main() {
+  const [command, ...rest] = process.argv.slice(2);
+
+  if (command === 'init') {
+    const targetPath = rest[0];
+    if (!targetPath) {
+      console.error('Usage: ob-wi-mcp init <path>');
+      process.exit(1);
+    }
+
+    await initWorkItemsRepo(targetPath);
+    return;
+  }
+
   const config = loadConfig();
   const git = createGit(config.workItemsPath);
 

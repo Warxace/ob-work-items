@@ -19,7 +19,8 @@ npm install -g @warxace/ob-wi-mcp
 This installs these commands:
 
 - `ob-wi-mcp` - MCP server entrypoint
-- `ob-wi-mcp-init` - initialize a new work-items repository
+- `ob-wi-mcp init <path>` - initialize a new work-items repository
+- `ob-wi-mcp-init` - compatibility alias for repository initialization
 - `ob-wi-mcp-setup-machine` - configure a machine for OpenCode usage
 - `ob-wi-mcp-launcher` - launcher used by install scripts
 
@@ -65,6 +66,12 @@ ob-wi-mcp --path /home/user/work-items
 ```
 
 ## Initialize a work-items repository
+
+```bash
+ob-wi-mcp init /home/user/work-items
+```
+
+Compatibility alias:
 
 ```bash
 ob-wi-mcp-init /home/user/work-items
