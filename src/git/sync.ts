@@ -31,12 +31,10 @@ export function startPeriodicSync(
   }
 
   const intervalMs = config.push.intervalSeconds * 1000;
-  const handle = setInterval(async () => {
-    try {
-      await pushRemote(git);
-    } catch (err) {
-      console.error('[sync] periodic push error:', (err as Error).message);
-    }
+  const handle = setInterval(() => {
+    void pushRemote(git).catch((err: unknown) => {
+      console.error('[sync] periodic push error:', err instanceof Error ? err.message : String(err));
+    });
   }, intervalMs);
 
   return () => clearInterval(handle);

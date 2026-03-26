@@ -73,6 +73,6 @@ if (!targetPath) {
 }
 
 init(targetPath).catch((err) => {
-  console.error('Init failed:', err.message);
+  console.error('Init failed:', err instanceof Error ? err.message : String(err));
   process.exit(1);
 });
