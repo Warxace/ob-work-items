@@ -30,6 +30,7 @@ export default defineConfig([
       '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/only-throw-error': 'error',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
       '@typescript-eslint/no-unsafe-argument': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',

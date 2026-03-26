@@ -42,7 +42,7 @@ async function main() {
   });
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
   console.error('[ob-wi-mcp] fatal error:', err);
   process.exit(1);
 });
