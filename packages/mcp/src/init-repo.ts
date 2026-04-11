@@ -23,12 +23,12 @@ export async function initWorkItemsRepo(targetPath: string): Promise<void> {
 function renderReadme(abs: string): string {
   return `# work-items
 
-Git-native work item tracker. Part of [Open Brain](https://github.com/NateBJones-Projects/OB1).
+Git-native work item tracker. Powered by [ob-work-items](https://github.com/Warxace/ob-work-items).
 
 ## Usage
 
 Work items are markdown files with YAML frontmatter.
-Access via MCP server \`ob-wi-mcp\`.
+Access via MCP server \`ob-wi-mcp\` or the web dashboard \`ob-wi-serve\`.
 
 ## File format
 
@@ -38,19 +38,22 @@ WI-YYYYMMDD-XXXX.md
 
 ## MCP server (opencode config)
 
-Paths use WSL format (/mnt/c/...) — the server runs in WSL.
-
 \`\`\`jsonc
 {
   "mcp": {
     "work-items": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/mnt/c/Users/Mi/source/Kashtan/ob-wi-mcp/dist/index.js"],
-      "env": { "WI_PATH": "${abs}" }
+      "command": ["ob-wi-mcp", "--path", "${abs}"]
     }
   }
 }
+\`\`\`
+
+## Web dashboard
+
+\`\`\`bash
+ob-wi-serve --path ${abs}
+# open http://localhost:3847
 \`\`\`
 `;
 }
