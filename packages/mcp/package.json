@@ -1,0 +1,33 @@
+{
+  "name": "@warxace/ob-wi-mcp",
+  "version": "0.3.0",
+  "description": "MCP server for git-native work item tracker (Open Brain)",
+  "type": "module",
+  "main": "dist/index.js",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "dist",
+    "scripts",
+    "README.md"
+  ],
+  "bin": {
+    "ob-wi-mcp": "dist/index.js",
+    "ob-wi-mcp-init": "dist/init.js",
+    "ob-wi-mcp-setup-machine": "scripts/setup-machine.sh",
+    "ob-wi-mcp-launcher": "scripts/run-mcp-server.sh"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsx src/index.ts",
+    "inspector": "npx @modelcontextprotocol/inspector dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.1",
+    "@warxace/ob-wi-core": "*",
+    "@warxace/ob-wi-git": "*",
+    "zod": "^3.24.2"
+  }
+}

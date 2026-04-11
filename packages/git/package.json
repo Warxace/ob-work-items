@@ -1,0 +1,21 @@
+{
+  "name": "@warxace/ob-wi-git",
+  "version": "0.3.0",
+  "description": "Git sync layer for git-native work items",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "simple-git": "^3.27.0"
+  }
+}
