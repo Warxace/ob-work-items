@@ -163,6 +163,7 @@ export default function App() {
             <ItemDetail
               item={detail}
               onUpdate={(patch) => void handleUpdate(patch)}
+              onNavigate={(id) => setSelectedId(id)}
               activeTags={filterParams.tags ?? []}
               onFilterByTag={(tag) => {
                 const current = filterParams.tags ?? [];

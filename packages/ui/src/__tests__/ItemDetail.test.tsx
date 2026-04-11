@@ -36,7 +36,8 @@ describe('ItemDetail', () => {
 
   it('renders links', () => {
     render(<ItemDetail item={item} onUpdate={() => {}} />);
-    expect(screen.getByText('https://example.com')).toBeInTheDocument();
+    // URL is rendered as an anchor; match by role to avoid depending on exact text decoration
+    expect(screen.getByRole('link', { name: /example\.com/i })).toBeInTheDocument();
   });
 
   it('renders markdown body', () => {
@@ -104,5 +105,49 @@ describe('ItemDetail', () => {
   it('does not show filter buttons when onFilterByTag is not provided', () => {
     render(<ItemDetail item={item} onUpdate={() => {}} />);
     expect(screen.queryByRole('button', { name: /filter by tag/i })).not.toBeInTheDocument();
+  });
+
+  describe('LinkItem', () => {
+    it('renders http URL as a clickable anchor with target=_blank', () => {
+      render(<ItemDetail item={item} onUpdate={() => {}} />);
+      const link = screen.getByRole('link', { name: /example\.com/i });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', 'https://example.com');
+      expect(link).toHaveAttribute('target', '_blank');
+    });
+
+    it('renders work item ID as navigable — shows Open button', () => {
+      render(<ItemDetail item={item} onUpdate={() => {}} onNavigate={() => {}} />);
+      expect(screen.getByRole('button', { name: /open 20260102-bbbb/i })).toBeInTheDocument();
+    });
+
+    it('calls onNavigate with the ID when Open is clicked', () => {
+      const onNavigate = vi.fn<(id: string) => void>();
+      render(<ItemDetail item={item} onUpdate={() => {}} onNavigate={onNavigate} />);
+      fireEvent.click(screen.getByRole('button', { name: /open 20260102-bbbb/i }));
+      expect(onNavigate).toHaveBeenCalledWith('20260102-bbbb');
+    });
+
+    it('renders work item ID with a copy button', () => {
+      render(<ItemDetail item={item} onUpdate={() => {}} onNavigate={() => {}} />);
+      expect(screen.getByRole('button', { name: /copy link 20260102-bbbb/i })).toBeInTheDocument();
+    });
+
+    it('renders unknown string with a copy button but no Open button', () => {
+      const itemWithArbitraryLink: WorkItem = {
+        ...item,
+        links: ['some-arbitrary-ref'],
+      };
+      render(<ItemDetail item={itemWithArbitraryLink} onUpdate={() => {}} onNavigate={() => {}} />);
+      expect(screen.getByRole('button', { name: /copy link some-arbitrary-ref/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /open some-arbitrary-ref/i })).not.toBeInTheDocument();
+    });
+
+    it('renders work item ID as plain text (no Open button) when onNavigate is not provided', () => {
+      render(<ItemDetail item={item} onUpdate={() => {}} />);
+      expect(screen.queryByRole('button', { name: /open 20260102-bbbb/i })).not.toBeInTheDocument();
+      // ID still visible as text
+      expect(screen.getByText('20260102-bbbb')).toBeInTheDocument();
+    });
   });
 });

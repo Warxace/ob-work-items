@@ -9,9 +9,14 @@ interface ItemDetailProps {
   onFilterByTag?: (tag: string) => void;
   /** Tags currently active in the filter — used to indicate already-filtered tags. */
   activeTags?: string[];
+  /** Called when user clicks "Open" on a work item ID link — navigates to that item. */
+  onNavigate?: (id: string) => void;
 }
 
 const STATUSES: WorkItem['status'][] = ['open', 'in-progress', 'blocked', 'done', 'cancelled'];
+
+/** Regex matching a work item ID: YYYYMMDD-xxxx */
+const WI_ID_RE = /^\d{8}-[0-9a-f]{4}$/;
 
 /** Copy text to clipboard, briefly shows "Copied!" feedback. */
 function useCopy() {
@@ -75,18 +80,76 @@ function Tag({ text, onFilter, isFiltered }: {
   );
 }
 
-function LinkItem({ href }: { href: string }) {
-  const isUrl = href.startsWith('http');
-  return isUrl
-    ? <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline break-all text-sm">{href}</a>
-    : <span className="font-mono text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">{href}</span>;
+/**
+ * A single entry in the links list.
+ *
+ * Three display modes:
+ * - http(s) URL  → anchor that opens in a new tab
+ * - work item ID → "Open" button (calls onNavigate) + "Copy" button
+ * - anything else → "Copy" button only
+ */
+function LinkItem({
+  href,
+  onNavigate,
+  copied,
+  copy,
+}: {
+  href: string;
+  onNavigate?: (id: string) => void;
+  copied: string | null;
+  copy: (label: string, text: string) => void;
+}) {
+  const isUrl = href.startsWith('http://') || href.startsWith('https://');
+  const isWiId = WI_ID_RE.test(href);
+  const copyLabel = `Copy link ${href}`;
+
+  if (isUrl) {
+    return (
+      <div className="flex items-center gap-2">
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-500 hover:underline break-all text-sm"
+        >
+          {href} ↗
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 group">
+      <span className="font-mono text-xs text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+        {href}
+      </span>
+      {isWiId && onNavigate && (
+        <button
+          type="button"
+          aria-label={`Open ${href}`}
+          onClick={() => onNavigate(href)}
+          className="text-xs px-2 py-0.5 rounded border border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors opacity-0 group-hover:opacity-100"
+        >
+          Open ↗
+        </button>
+      )}
+      <button
+        type="button"
+        aria-label={copyLabel}
+        onClick={() => copy(copyLabel, href)}
+        className="text-xs px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors opacity-0 group-hover:opacity-100"
+      >
+        {copied === copyLabel ? 'Copied!' : 'Copy'}
+      </button>
+    </div>
+  );
 }
 
 /**
  * Detail panel for a single work item.
  * Shows all fields, rendered markdown body, and controls for status/tags editing.
  */
-export function ItemDetail({ item, onUpdate, onFilterByTag, activeTags = [] }: ItemDetailProps) {
+export function ItemDetail({ item, onUpdate, onFilterByTag, activeTags = [], onNavigate }: ItemDetailProps) {
   const { copied, copy } = useCopy();
 
   const markdownText = `# ${item.title}\n\nID: ${item.id}\n\n${item.body}`;
@@ -157,9 +220,17 @@ export function ItemDetail({ item, onUpdate, onFilterByTag, activeTags = [] }: I
 
       {/* Links */}
       {item.links && item.links.length > 0 && (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Links</span>
-          {item.links.map((l) => <LinkItem key={l} href={l} />)}
+          {item.links.map((l) => (
+            <LinkItem
+              key={l}
+              href={l}
+              onNavigate={onNavigate}
+              copied={copied}
+              copy={copy}
+            />
+          ))}
         </div>
       )}
 
