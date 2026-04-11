@@ -22,7 +22,7 @@
     "build": "tsc --build",
     "dev": "tsx src/index.ts",
     "inspector": "npx @modelcontextprotocol/inspector dist/index.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm test --workspace=../.. --if-present"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.1",
