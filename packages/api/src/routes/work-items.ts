@@ -65,9 +65,19 @@ export function workItemsRoutes(config: AppConfig): Hono {
     if (q['type']) filter.type = q['type'] as WorkItemFilter['type'];
     if (q['status']) filter.status = q['status'] as WorkItemFilter['status'];
     if (q['priority']) filter.priority = q['priority'] as WorkItemFilter['priority'];
-    if (q['tags']) filter.tags = q['tags'].split(',').map((t) => t.trim()).filter(Boolean);
+    // tags supports multiple values (comma-separated), matched with OR logic
+    const rawTags = q['tags'] ? q['tags'].split(',').map((t) => t.trim()).filter(Boolean) : [];
+    // Store raw tags for OR filtering; core filter.tags uses AND, so we handle OR manually below
+    const orTags = rawTags.length > 0 ? rawTags : null;
     if (q['agent']) filter.agent = q['agent'];
     if (q['machine']) filter.machine = q['machine'];
+
+    /** OR-tag filter: item must have at least one of the requested tags. */
+    function matchesOrTags(item: WorkItem): boolean {
+      if (!orTags) return true;
+      const itemTags = item.tags ?? [];
+      return orTags.some((t) => itemTags.includes(t));
+    }
 
     // Fetch — use search if q param provided, otherwise list with filter
     let items: WorkItem[];
@@ -80,14 +90,13 @@ export function workItemsRoutes(config: AppConfig): Hono {
         if (filter.priority && item.priority !== filter.priority) return false;
         if (filter.agent && item.source?.agent !== filter.agent) return false;
         if (filter.machine && item.source?.machine !== filter.machine) return false;
-        if (filter.tags && filter.tags.length > 0) {
-          const itemTags = item.tags ?? [];
-          if (!filter.tags.every((t) => itemTags.includes(t))) return false;
-        }
+        if (!matchesOrTags(item)) return false;
         return true;
       });
     } else {
       items = await listWorkItems(config.repoPath, filter);
+      // Apply OR-tags filter on top of core list (core uses AND, we need OR)
+      if (orTags) items = items.filter(matchesOrTags);
     }
 
     // Sort

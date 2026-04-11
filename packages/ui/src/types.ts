@@ -37,7 +37,8 @@ export interface ListParams {
   type?: WorkItemType;
   status?: WorkItemStatus;
   priority?: WorkItemPriority;
-  tags?: string;
+  /** Selected tag values — matched with OR logic (item has at least one). */
+  tags?: string[];
   q?: string;
   sort?: string;
   order?: 'asc' | 'desc';

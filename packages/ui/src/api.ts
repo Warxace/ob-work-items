@@ -2,18 +2,23 @@ import type { WorkItem, ListResponse, MetaStats, ListParams } from './types.js';
 
 const BASE = '/api';
 
-function buildQuery(params: Record<string, string | undefined>): string {
+function buildQuery(params: ListParams): string {
   const q = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== '') q.set(k, v);
-  }
+  if (params.type) q.set('type', params.type);
+  if (params.status) q.set('status', params.status);
+  if (params.priority) q.set('priority', params.priority);
+  // tags[] serialised as comma-separated for OR-matching on the server
+  if (params.tags && params.tags.length > 0) q.set('tags', params.tags.join(','));
+  if (params.q) q.set('q', params.q);
+  if (params.sort) q.set('sort', params.sort);
+  if (params.order) q.set('order', params.order);
   const s = q.toString();
   return s ? `?${s}` : '';
 }
 
 /** Fetch list of work items with optional filters. */
 export async function fetchItems(params: ListParams = {}): Promise<ListResponse> {
-  const res = await fetch(`${BASE}/items${buildQuery(params as Record<string, string>)}`);
+  const res = await fetch(`${BASE}/items${buildQuery(params)}`);
   if (!res.ok) throw new Error(`Failed to fetch items: ${res.status}`);
   return res.json() as Promise<ListResponse>;
 }

@@ -23,7 +23,8 @@ function useFilterParams(): [ListParams, (p: ListParams) => void] {
   if (type) params.type = type as ListParams['type'];
   if (status) params.status = status as ListParams['status'];
   if (priority) params.priority = priority as ListParams['priority'];
-  if (tags) params.tags = tags;
+  // tags stored as comma-separated in URL: ?tags=a,b,c
+  if (tags) params.tags = tags.split(',').map((t) => t.trim()).filter(Boolean);
   if (q) params.q = q;
   if (sort) params.sort = sort;
   if (order) params.order = order as 'asc' | 'desc';
@@ -33,7 +34,7 @@ function useFilterParams(): [ListParams, (p: ListParams) => void] {
     if (p.type) next.set('type', p.type);
     if (p.status) next.set('status', p.status);
     if (p.priority) next.set('priority', p.priority);
-    if (p.tags) next.set('tags', p.tags);
+    if (p.tags && p.tags.length > 0) next.set('tags', p.tags.join(','));
     if (p.q) next.set('q', p.q);
     if (p.sort) next.set('sort', p.sort);
     if (p.order) next.set('order', p.order);
@@ -159,7 +160,17 @@ export default function App() {
         {/* Detail panel */}
         {detail && (
           <div className="flex-1 overflow-y-auto">
-            <ItemDetail item={detail} onUpdate={(patch) => void handleUpdate(patch)} />
+            <ItemDetail
+              item={detail}
+              onUpdate={(patch) => void handleUpdate(patch)}
+              activeTags={filterParams.tags ?? []}
+              onFilterByTag={(tag) => {
+                const current = filterParams.tags ?? [];
+                if (!current.includes(tag)) {
+                  setFilterParams({ ...filterParams, tags: [...current, tag] });
+                }
+              }}
+            />
           </div>
         )}
       </div>

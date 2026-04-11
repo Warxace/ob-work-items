@@ -41,7 +41,6 @@ describe('ItemDetail', () => {
 
   it('renders markdown body', () => {
     render(<ItemDetail item={item} onUpdate={() => {}} />);
-    // react-markdown renders the heading
     expect(screen.getByRole('heading', { name: 'Details' })).toBeInTheDocument();
   });
 
@@ -72,5 +71,38 @@ describe('ItemDetail', () => {
     render(<ItemDetail item={item} onUpdate={() => {}} />);
     expect(screen.getByText(/opencode/)).toBeInTheDocument();
     expect(screen.getByText(/wsl/)).toBeInTheDocument();
+  });
+
+  it('shows filter buttons for tags when onFilterByTag is provided', () => {
+    const onFilterByTag = vi.fn<(tag: string) => void>();
+    render(<ItemDetail item={item} onUpdate={() => {}} onFilterByTag={onFilterByTag} />);
+    // + buttons for non-active tags
+    expect(screen.getByRole('button', { name: /filter by tag backend/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /filter by tag ci/i })).toBeInTheDocument();
+  });
+
+  it('calls onFilterByTag when tag filter button is clicked', () => {
+    const onFilterByTag = vi.fn<(tag: string) => void>();
+    render(<ItemDetail item={item} onUpdate={() => {}} onFilterByTag={onFilterByTag} />);
+    fireEvent.click(screen.getByRole('button', { name: /filter by tag backend/i }));
+    expect(onFilterByTag).toHaveBeenCalledWith('backend');
+  });
+
+  it('marks tag as already filtered when it is in activeTags', () => {
+    render(
+      <ItemDetail
+        item={item}
+        onUpdate={() => {}}
+        onFilterByTag={() => {}}
+        activeTags={['backend']}
+      />,
+    );
+    const alreadyFiltered = screen.getByRole('button', { name: /tag backend already in filter/i });
+    expect(alreadyFiltered).toBeDisabled();
+  });
+
+  it('does not show filter buttons when onFilterByTag is not provided', () => {
+    render(<ItemDetail item={item} onUpdate={() => {}} />);
+    expect(screen.queryByRole('button', { name: /filter by tag/i })).not.toBeInTheDocument();
   });
 });

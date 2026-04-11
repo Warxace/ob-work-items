@@ -1,4 +1,5 @@
 import type { ListParams, WorkItemType, WorkItemStatus, WorkItemPriority } from '../types.js';
+import { TagPicker } from './TagPicker.js';
 
 interface FiltersProps {
   params: ListParams;
@@ -16,14 +17,15 @@ function countActiveFilters(params: ListParams): number {
   if (params.type) n++;
   if (params.status) n++;
   if (params.priority) n++;
-  if (params.tags) n++;
+  if (params.tags && params.tags.length > 0) n += params.tags.length;
   if (params.q) n++;
   return n;
 }
 
 /**
- * Filter bar with search input and dropdowns for type, status, priority.
- * Calls onChange with full updated params object on every change.
+ * Filter bar: search input, type/status/priority dropdowns, and a
+ * multi-select TagPicker with autocomplete and chip display.
+ * All tag values are combined with OR logic.
  */
 export function Filters({ params, tags, onChange }: FiltersProps) {
   const activeCount = countActiveFilters(params);
@@ -85,21 +87,12 @@ export function Filters({ params, tags, onChange }: FiltersProps) {
         </select>
       </label>
 
-      {/* Tags */}
-      {tags.length > 0 && (
-        <label className="flex items-center gap-1 text-sm">
-          <span className="text-gray-500 dark:text-gray-400">Tag</span>
-          <select
-            aria-label="Tag"
-            value={params.tags ?? ''}
-            onChange={(e) => update({ tags: e.target.value || undefined })}
-            className="px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          >
-            <option value="">All</option>
-            {tags.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </label>
-      )}
+      {/* Tags — multi-select with autocomplete */}
+      <TagPicker
+        allTags={tags}
+        selected={params.tags ?? []}
+        onChange={(t) => update({ tags: t.length > 0 ? t : undefined })}
+      />
 
       {/* Active filter badge + clear */}
       {activeCount > 0 && (

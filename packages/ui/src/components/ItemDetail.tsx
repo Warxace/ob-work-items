@@ -5,6 +5,10 @@ import type { WorkItem } from '../types.js';
 interface ItemDetailProps {
   item: WorkItem;
   onUpdate: (patch: { status?: WorkItem['status']; tags?: string[] }) => void;
+  /** Called when user clicks "filter by tag" — adds that tag to the active filter set. */
+  onFilterByTag?: (tag: string) => void;
+  /** Tags currently active in the filter — used to indicate already-filtered tags. */
+  activeTags?: string[];
 }
 
 const STATUSES: WorkItem['status'][] = ['open', 'in-progress', 'blocked', 'done', 'cancelled'];
@@ -41,10 +45,32 @@ function CopyBtn({ label, text, copied, copy }: {
   );
 }
 
-function Tag({ text }: { text: string }) {
+function Tag({ text, onFilter, isFiltered }: {
+  text: string;
+  onFilter?: (tag: string) => void;
+  isFiltered?: boolean;
+}) {
   return (
-    <span className="inline-block px-2 py-0.5 text-xs rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
-      {text}
+    <span className="inline-flex items-center gap-0.5 group">
+      <span className="inline-block px-2 py-0.5 text-xs rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+        {text}
+      </span>
+      {onFilter && (
+        <button
+          type="button"
+          aria-label={isFiltered ? `Tag ${text} already in filter` : `Filter by tag ${text}`}
+          onClick={() => onFilter(text)}
+          disabled={isFiltered}
+          title={isFiltered ? 'Already in filter' : 'Add to filter'}
+          className={`text-xs px-1 py-0.5 rounded transition-colors ${
+            isFiltered
+              ? 'text-indigo-400 dark:text-indigo-600 cursor-default'
+              : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 opacity-0 group-hover:opacity-100'
+          }`}
+        >
+          {isFiltered ? '✓' : '+'}
+        </button>
+      )}
     </span>
   );
 }
@@ -60,7 +86,7 @@ function LinkItem({ href }: { href: string }) {
  * Detail panel for a single work item.
  * Shows all fields, rendered markdown body, and controls for status/tags editing.
  */
-export function ItemDetail({ item, onUpdate }: ItemDetailProps) {
+export function ItemDetail({ item, onUpdate, onFilterByTag, activeTags = [] }: ItemDetailProps) {
   const { copied, copy } = useCopy();
 
   const markdownText = `# ${item.title}\n\nID: ${item.id}\n\n${item.body}`;
@@ -114,8 +140,18 @@ export function ItemDetail({ item, onUpdate }: ItemDetailProps) {
 
       {/* Tags */}
       {item.tags && item.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {item.tags.map((t) => <Tag key={t} text={t} />)}
+        <div className="flex flex-wrap gap-1 items-center">
+          {onFilterByTag && (
+            <span className="text-xs text-gray-400 dark:text-gray-500 mr-1">Tags</span>
+          )}
+          {item.tags.map((t) => (
+            <Tag
+              key={t}
+              text={t}
+              onFilter={onFilterByTag}
+              isFiltered={activeTags.includes(t)}
+            />
+          ))}
         </div>
       )}
 

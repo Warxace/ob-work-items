@@ -120,12 +120,27 @@ describe('GET /api/items', () => {
     expect((json.items as { priority: string }[])[0].priority).toBe('high');
   });
 
-  it('filters by tags', async () => {
+  it('filters by single tag', async () => {
     await seed();
     const res = await req('GET', '/api/items?tags=backend');
     const json = await res.json() as { items: unknown[]; total: number };
     expect(json.total).toBe(2);
     (json.items as { tags: string[] }[]).forEach((i) => expect(i.tags).toContain('backend'));
+  });
+
+  it('filters by multiple tags with OR logic', async () => {
+    // backend → 2 items, frontend → 1 item; OR should return all 3
+    await seed();
+    const res = await req('GET', '/api/items?tags=backend,frontend');
+    const json = await res.json() as { items: unknown[]; total: number };
+    expect(json.total).toBe(3);
+    const allTags = (json.items as { tags: string[] }[]).flatMap((i) => i.tags);
+    // every item must have at least one of the requested tags
+    (json.items as { tags: string[] }[]).forEach((i) =>
+      expect(i.tags.some((t) => ['backend', 'frontend'].includes(t))).toBe(true),
+    );
+    expect(allTags).toContain('backend');
+    expect(allTags).toContain('frontend');
   });
 
   it('full-text search with q', async () => {
