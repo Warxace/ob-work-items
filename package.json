@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "serve": "node packages/api/dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
