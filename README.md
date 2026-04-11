@@ -11,8 +11,36 @@ Work items are Markdown files with YAML frontmatter stored in a git repository. 
 | [`@warxace/ob-wi-core`](packages/core/README.md) | Core types, parsing, CRUD, search |
 | [`@warxace/ob-wi-git`](packages/git/README.md) | Git sync layer (commit, pull, push) |
 | [`@warxace/ob-wi-mcp`](packages/mcp/README.md) | MCP stdio server for AI agent clients |
-| `@warxace/ob-wi-api` | HTTP API *(coming soon)* |
-| `@warxace/ob-wi-ui` | Web dashboard *(coming soon)* |
+| [`@warxace/ob-wi-api`](packages/api/README.md) | HTTP API (Hono, read-mostly REST) |
+| `@warxace/ob-wi-ui` | React + Vite web dashboard (served via api) |
+
+## Quick start (Web UI)
+
+Build everything, then start the combined API + UI server:
+
+```bash
+npm install
+npm run build
+node packages/api/dist/index.js --path /path/to/work-items
+```
+
+Open [http://localhost:3847](http://localhost:3847).
+
+Options:
+
+| Flag | Env var | Default | Description |
+|---|---|---|---|
+| `--path` | `WI_PATH` | required | Path to the work-items git repository |
+| `--port` | `WI_PORT` | `3847` | HTTP port |
+
+Features:
+
+- Filter by type, status, priority, tags, free-text search
+- Sortable table, URL-addressable filters (`?type=issue&status=open`)
+- Master-Detail layout with rendered Markdown body
+- Keyboard navigation (↑↓ rows, Esc close)
+- Copy ID / title / markdown body to clipboard
+- Inline status editing
 
 ## Quick start (MCP)
 
@@ -45,7 +73,7 @@ ob-wi-mcp --path /path/to/work-items
 ```bash
 npm install
 npm run build   # builds all packages
-npm test        # runs all tests
+npm test        # runs all tests (77 tests, node + jsdom)
 npm run lint    # lints all packages
 ```
 
@@ -56,8 +84,8 @@ packages/
   core/   — filesystem-based CRUD, no transport dependency
   git/    — simple-git wrapper for commit/push/pull
   mcp/    — MCP stdio server (uses core + git)
-  api/    — HTTP API for UI (uses core + git)
-  ui/     — React + Vite web dashboard (talks to api)
+  api/    — HTTP API + serves UI static build (uses core + git)
+  ui/     — React + Vite web dashboard (talks to api over HTTP)
 ```
 
 Dependency graph:
