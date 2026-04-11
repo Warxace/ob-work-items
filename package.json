@@ -1,47 +1,25 @@
 {
-  "name": "@warxace/ob-wi-mcp",
+  "name": "ob-work-items",
   "version": "0.3.0",
-  "description": "MCP server for git-native work item tracker (Open Brain)",
+  "description": "Git-native work item tracker (Open Brain) — monorepo",
+  "private": true,
   "type": "module",
-  "main": "dist/index.js",
+  "workspaces": [
+    "packages/*"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Warxace/ob-wi-mcp.git"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "files": [
-    "dist",
-    "scripts",
-    "README.md"
-  ],
-  "bin": {
-    "ob-wi-mcp": "dist/index.js",
-    "ob-wi-mcp-init": "dist/init.js",
-    "ob-wi-mcp-setup-machine": "scripts/setup-machine.sh",
-    "ob-wi-mcp-launcher": "scripts/run-mcp-server.sh"
+    "url": "https://github.com/Warxace/ob-work-items.git"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsx src/index.ts",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "build": "npm run build --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
-    "inspector": "npx @modelcontextprotocol/inspector dist/index.js",
-    "prepublishOnly": "npm run lint && npm run build && npm test"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.10.1",
-    "gray-matter": "^4.0.3",
-    "js-yaml": "^4.1.0",
-    "simple-git": "^3.27.0",
-    "zod": "^3.24.2"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.13.14",
     "eslint": "^10.1.0",
     "globals": "^17.4.0",
