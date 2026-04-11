@@ -1,114 +1,68 @@
-# ob-wi-mcp
+# ob-work-items
 
-MCP server for a git-native work item tracker used by OpenCode and other MCP clients.
+Git-native work item tracker for AI agents. Part of the Open Brain project.
 
-## What it does
+Work items are Markdown files with YAML frontmatter stored in a git repository. Multiple entry points provide access to this data.
 
-- Stores work items as Markdown files with YAML frontmatter
-- Exposes CRUD, search, and validation tools over MCP stdio
-- Commits changes to git and can sync with a remote repository
+## Packages
 
-## Install
+| Package | Description |
+|---|---|
+| [`@warxace/ob-wi-core`](packages/core/README.md) | Core types, parsing, CRUD, search |
+| [`@warxace/ob-wi-git`](packages/git/README.md) | Git sync layer (commit, pull, push) |
+| [`@warxace/ob-wi-mcp`](packages/mcp/README.md) | MCP stdio server for AI agent clients |
+| `@warxace/ob-wi-api` | HTTP API *(coming soon)* |
+| `@warxace/ob-wi-ui` | Web dashboard *(coming soon)* |
 
-### Global package install
+## Quick start (MCP)
 
 ```bash
+# Install MCP server
 npm install -g @warxace/ob-wi-mcp
+
+# Initialize a work-items repository
+ob-wi-mcp init /path/to/work-items
+
+# Start the MCP server
+ob-wi-mcp --path /path/to/work-items
 ```
 
-This installs these commands:
+### opencode config
 
-- `ob-wi-mcp` - MCP server entrypoint
-- `ob-wi-mcp init <path>` - initialize a new work-items repository
-- `ob-wi-mcp-init` - compatibility alias for repository initialization
-- `ob-wi-mcp-setup-machine` - configure a machine for OpenCode usage
-- `ob-wi-mcp-launcher` - launcher used by install scripts
-
-### Setup a machine for OpenCode
-
-```bash
-ob-wi-mcp-setup-machine
-```
-
-The setup script:
-
-- configures `~/.npmrc` for GitHub Packages
-- installs or updates the package globally
-- installs a stable launcher in `~/.local/bin/ob-work-items-mcp-server`
-- clones or updates the `work-items` git repository
-- updates `~/.config/opencode/opencode.json`
-
-## Manual OpenCode config
-
-If you do not want to use the setup script, point OpenCode at the launcher or server binary directly.
-
-```json
+```jsonc
 {
-  "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "work-items": {
-      "type": "local",
-      "command": [
-        "/home/user/.local/bin/ob-work-items-mcp-server",
-        "--path",
-        "/home/user/work-items"
-      ],
-      "enabled": true
+      "type": "stdio",
+      "command": ["ob-wi-mcp", "--path", "/path/to/work-items"]
     }
   }
 }
 ```
 
-You can also run the server entrypoint directly:
-
-```bash
-ob-wi-mcp --path /home/user/work-items
-```
-
-## Initialize a work-items repository
-
-```bash
-ob-wi-mcp init /home/user/work-items
-```
-
-Compatibility alias:
-
-```bash
-ob-wi-mcp-init /home/user/work-items
-```
-
-This creates:
-
-- `.schema/types.yaml`
-- `README.md`
-- `.gitignore`
-- an initial git commit
-
-## Configuration
-
-Server configuration is passed through CLI flags or environment variables.
-
-```bash
-ob-wi-mcp --path /home/user/work-items --push-strategy periodic --push-interval 30
-```
-
-Supported inputs:
-
-- `--path` or `WI_PATH`
-- `--push-strategy` or `WI_PUSH_STRATEGY`
-- `--push-interval` or `WI_PUSH_INTERVAL`
-
 ## Development
 
 ```bash
 npm install
-npm run lint
-npm run build
-npm test
+npm run build   # builds all packages
+npm test        # runs all tests
+npm run lint    # lints all packages
 ```
 
-For manual MCP inspection:
+## Architecture
 
-```bash
-npm run inspector
+```
+packages/
+  core/   — filesystem-based CRUD, no transport dependency
+  git/    — simple-git wrapper for commit/push/pull
+  mcp/    — MCP stdio server (uses core + git)
+  api/    — HTTP API for UI (uses core + git)
+  ui/     — React + Vite web dashboard (talks to api)
+```
+
+Dependency graph:
+
+```
+ui ──HTTP──> api ──import──> core + git
+mcp ──import──> core + git
 ```
