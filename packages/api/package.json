@@ -1,0 +1,22 @@
+{
+  "name": "@warxace/ob-wi-api",
+  "version": "0.3.0",
+  "description": "HTTP API server for ob-work-items — read-mostly REST layer over the git-native store",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "ob-wi-serve": "dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@warxace/ob-wi-core": "*",
+    "@warxace/ob-wi-git": "*",
+    "hono": "^4.7.7",
+    "zod": "^3.24.2"
+  }
+}
