@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { WorkItem } from '../types.js';
 
 interface ItemDetailProps {
@@ -237,7 +238,7 @@ export function ItemDetail({ item, onUpdate, onFilterByTag, activeTags = [], onN
       {/* Markdown body */}
       {item.body && (
         <div className="prose dark:prose-invert max-w-none border-t border-gray-100 dark:border-gray-800 pt-3">
-          <Markdown>{item.body}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm]}>{item.body}</Markdown>
         </div>
       )}
     </div>

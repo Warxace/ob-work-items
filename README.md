@@ -77,6 +77,27 @@ npm test        # runs all tests (77 tests, node + jsdom)
 npm run lint    # lints all packages
 ```
 
+### Run UI in dev mode
+
+Start the API first in one terminal:
+
+```bash
+npm run dev -w @warxace/ob-wi-api -- --path /abs/path/to/work-items
+```
+
+Then start the Vite UI in another terminal:
+
+```bash
+npm run dev -w @warxace/ob-wi-ui
+```
+
+Open the UI at `http://localhost:5173`.
+
+Notes:
+
+- The package names are `@warxace/ob-wi-api` and `@warxace/ob-wi-ui`.
+- The UI dev server proxies `/api` to `http://localhost:3847`, so the API must be running there.
+
 ## Architecture
 
 ```
