@@ -39,7 +39,7 @@ export function Filters({ params, tags, onChange }: FiltersProps) {
       {/* Search */}
       <input
         type="text"
-        placeholder="Search titles and bodies…"
+        placeholder="Search IDs, titles and bodies…"
         value={params.q ?? ''}
         onChange={(e) => update({ q: e.target.value || undefined })}
         className="flex-1 min-w-40 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"

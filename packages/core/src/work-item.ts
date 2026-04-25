@@ -126,7 +126,7 @@ export async function listWorkItems(
 }
 
 /**
- * Full-text search in work item bodies and titles.
+ * Full-text search in work item IDs, titles, and bodies.
  */
 export async function searchWorkItems(
   repoPath: string,
@@ -137,7 +137,8 @@ export async function searchWorkItems(
   return all.filter(
     (item) =>
       item.title.toLowerCase().includes(lower) ||
-      item.body.toLowerCase().includes(lower),
+      item.body.toLowerCase().includes(lower) ||
+      item.id.toLowerCase().includes(lower),
   );
 }
 

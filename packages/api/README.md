@@ -24,7 +24,7 @@ Query parameters (all optional):
 | `tags` | string | Comma-separated tags (all must match) |
 | `agent` | string | Filter by source agent |
 | `machine` | string | Filter by source machine |
-| `q` | string | Full-text search in title and body |
+| `q` | string | Full-text search in title, body, and ID |
 | `sort` | string | Sort field: `created` (default), `updated`, `title`, `status`, `priority`, `type` |
 | `order` | string | `asc` (default) or `desc` |
 

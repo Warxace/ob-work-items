@@ -76,7 +76,7 @@ export function createServer(config: Config, git: SimpleGit): McpServer {
   server.registerTool(
     'search_work_items',
     {
-      description: 'Full-text search across work item titles and bodies',
+      description: 'Full-text search across work item IDs, titles, and bodies',
       inputSchema: SearchWorkItemsSchema.shape,
     },
     async (input) => {

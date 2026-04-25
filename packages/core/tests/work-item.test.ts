@@ -152,4 +152,16 @@ describe('searchWorkItems', () => {
     const results = await searchWorkItems(tmpDir, 'auth');
     expect(results).toHaveLength(2);
   });
+
+  it('finds items by ID substring', async () => {
+    const t = new Date('2025-06-01T08:00:00Z');
+    await createWorkItem(tmpDir, { type: 'task', status: 'open', priority: 'low', title: 'Unique title', body: 'no match here', tags: [], links: [] }, t);
+    const all = await listWorkItems(tmpDir);
+    const created = all.find((i) => i.id.startsWith('20250601'));
+    expect(created).toBeDefined();
+
+    const results = await searchWorkItems(tmpDir, '20250601');
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe(created!.id);
+  });
 });
