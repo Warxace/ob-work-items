@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { useState } from 'react';
 import { Filters } from '../components/Filters.js';
 import type { ListParams } from '../types.js';
@@ -36,15 +36,26 @@ function StatefulFilters({
 const noop = () => {};
 
 describe('Filters', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('renders search input', () => {
     render(<Filters params={{}} tags={[]} onChange={noop} />);
     expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
   });
 
-  it('calls onChange when search text changes', () => {
+  it('calls onChange when search text changes (debounced 500ms)', () => {
     const onChange = vi.fn<(p: ListParams) => void>();
     render(<Filters params={{}} tags={[]} onChange={onChange} />);
     fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'bug' } });
+    // Not called immediately due to debounce
+    expect(onChange).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(500));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ q: 'bug' }));
   });
 

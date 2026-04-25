@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import type { ListParams, WorkItemType, WorkItemStatus, WorkItemPriority } from '../types.js';
 import { TagPicker } from './TagPicker.js';
 
@@ -12,13 +13,13 @@ const STATUSES: WorkItemStatus[] = ['open', 'in-progress', 'blocked', 'done', 'c
 const PRIORITIES: WorkItemPriority[] = ['critical', 'high', 'medium', 'low'];
 
 /** Count how many non-empty filters are active (excluding sort/order). */
-function countActiveFilters(params: ListParams): number {
+function countActiveFilters(params: ListParams, searchValue: string): number {
   let n = 0;
   if (params.type) n++;
   if (params.status) n++;
   if (params.priority) n++;
   if (params.tags && params.tags.length > 0) n += params.tags.length;
-  if (params.q) n++;
+  if (searchValue) n++;
   return n;
 }
 
@@ -28,10 +29,34 @@ function countActiveFilters(params: ListParams): number {
  * All tag values are combined with OR logic.
  */
 export function Filters({ params, tags, onChange }: FiltersProps) {
-  const activeCount = countActiveFilters(params);
+  const [searchValue, setSearchValue] = useState(params.q ?? '');
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
+  const activeCount = countActiveFilters(params, searchValue);
+
+  // Sync external q changes (URL navigation, Clear button) into local state
+  useEffect(() => {
+    setSearchValue(params.q ?? '');
+  }, [params.q]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   function update(patch: Partial<ListParams>) {
     onChange({ ...params, ...patch });
+  }
+
+  function handleSearchChange(value: string) {
+    setSearchValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      onChange({ ...paramsRef.current, q: value || undefined });
+    }, 500);
   }
 
   return (
@@ -40,8 +65,8 @@ export function Filters({ params, tags, onChange }: FiltersProps) {
       <input
         type="text"
         placeholder="Search IDs, titles and bodies…"
-        value={params.q ?? ''}
-        onChange={(e) => update({ q: e.target.value || undefined })}
+        value={searchValue}
+        onChange={(e) => handleSearchChange(e.target.value)}
         className="flex-1 min-w-40 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
       />
 
